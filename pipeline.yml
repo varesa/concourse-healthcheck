@@ -46,25 +46,3 @@ jobs:
 
                 params:
                     VAULT_HEALTH: ((healthcheck))
-
-#            on_success:
-#                task: "notify success"
-#                config:
-#                    inputs: [ name: dns-repo ]
-#
-#                    platform: linux
-#
-#                    image_resource:
-#                        type: docker-image
-#                        source: { repository: registry.esav.fi/base/ci_container }
-#
-#                    run:
-#                        path: bash
-#                        args:
-#                            - -exuc
-#                            - |
-#                                curl -u $API_TOKEN: -X POST https://api.pushbullet.com/v2/pushes --header 'Content-Type: application/json' \
-#                                    --data-binary '{"type": "note", "title": "DNS Commit succesful", "body": "DNS commit done"}'
-#                    params:
-#                        API_TOKEN: ((pushbullet.token))
-#
