@@ -1,0 +1,69 @@
+---
+resources:
+    - name: hourly-timer
+      type: time
+      source:
+        interval: 1h
+
+jobs:
+    - name: Test concourse functionality
+      public: true
+      plan:
+          - get: hourly-timer
+            trigger: true
+
+          - task: Test vault
+            config:
+                platform: linux
+
+                image_resource:
+                    type: docker-image
+                    source: { repository: registry.esav.fi/base/ci_container }
+
+                run:
+                    path: bash
+                    args:
+                        - -euc
+                        - |
+                            echo "##################"
+                            echo "# Checking vault #"
+                            echo "##################"
+                            echo ""
+                            echo "Vault status: $VAULT_HEALTH"
+
+                            if [[ "$VAULT_HEALTH" == "ok" ]]
+                            then
+                                # Store the result with an expiry of two hours
+                                echo "Publishing to http://shortkeep-health.os.tre.esav.fi/concourse-healthcheck-result"
+                                curl -XPOST --data "$(date)" http://shortkeep-health.os.tre.esav.fi/concourse-healthcheck-result/2h
+                            else
+                                # Expire the document immediately
+                                echo "Forcing the expiration of http://shortkeep-health.os.tre.esav.fi/concourse-healthcheck-result"
+                                curl -XPOST --data "" http://shortkeep-health.os.tre.esav.fi/concourse-healthcheck-result/1
+                            fi
+
+
+                params:
+                    VAULT_HEALTH: ((healthcheck))
+
+#            on_success:
+#                task: "notify success"
+#                config:
+#                    inputs: [ name: dns-repo ]
+#
+#                    platform: linux
+#
+#                    image_resource:
+#                        type: docker-image
+#                        source: { repository: registry.esav.fi/base/ci_container }
+#
+#                    run:
+#                        path: bash
+#                        args:
+#                            - -exuc
+#                            - |
+#                                curl -u $API_TOKEN: -X POST https://api.pushbullet.com/v2/pushes --header 'Content-Type: application/json' \
+#                                    --data-binary '{"type": "note", "title": "DNS Commit succesful", "body": "DNS commit done"}'
+#                    params:
+#                        API_TOKEN: ((pushbullet.token))
+#
