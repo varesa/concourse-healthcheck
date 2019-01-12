@@ -34,12 +34,13 @@ jobs:
                             if [[ "$VAULT_HEALTH" == "ok" ]]
                             then
                                 # Store the result with an expiry of two hours
-                                echo "Publishing to http://shortkeep-health.os.tre.esav.fi/concourse-healthcheck-result"
+                                echo -n "Publishing to http://shortkeep-health.os.tre.esav.fi/concourse-healthcheck-result: "
                                 curl -XPOST --data "$(date)" http://shortkeep-health.os.tre.esav.fi/concourse-healthcheck-result/2h
                             else
                                 # Expire the document immediately
-                                echo "Forcing the expiration of http://shortkeep-health.os.tre.esav.fi/concourse-healthcheck-result"
+                                echo -n "Forcing the expiration of http://shortkeep-health.os.tre.esav.fi/concourse-healthcheck-result: "
                                 curl -XPOST --data "" http://shortkeep-health.os.tre.esav.fi/concourse-healthcheck-result/1
+                                exit 1
                             fi
 
 
